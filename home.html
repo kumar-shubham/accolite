@@ -32,7 +32,8 @@
 				      </a>
 				      <ul id="nav-mobile" class="right hide-on-med-and-down">
 				        <li style="margin-left: -100%;"> <b> API HITS : </b> {{api_hits.api_hits}}</li>
-				        <li> <b> Total Products : </b> {{menu.length}}</li>
+				        <li style="margin-left: -35%;"><b> Total Products : </b> {{menu.length}}</li>
+				        <li style="margin-left: 35%;"><b> Total Likes : </b> {{ getTotalLikes() }}</li>
 				      </ul>
 				    </div>
 				  </nav>
@@ -55,6 +56,10 @@
 	      <span class="sortorder" ng-show="predicate === 'rating'" ng-class="{reverse:reverse}"></span>
 	      <input name="group1" type="radio" id="test2" ng-click="order('rating')"/>
 	      <label for="test2">Rating</label>
+
+	      <span class="sortorder" ng-show="predicate === 'likes'" ng-class="{reverse:reverse}"></span>
+	      <input name="group1" type="radio" id="test3" ng-click="order('likes')"/>
+	      <label for="test3">Likes</label>
 	    
 	  		</form>
 	        
@@ -62,7 +67,9 @@
 				    <li ng-repeat="x in menu | filter:searchText | orderBy:predicate:reverse" style="margin-top: 2%;">
 				      <div class="collapsible-header" onclick="setTimeout(changeIcon, 100); setTimeout(setRating, 10);" >
 				      	<span><i class="small mdi-navigation-chevron-right"></i></span>
-									<span><b> {{x.name}}</b></span><p style="margin-top: -3.5%;margin-left: 20%;"><span class="stars" value="{{x.rating}}"></span></p>
+									<span><b> {{x.name}}</b></span><p style="margin-top: -3.5%;margin-left: 20%;"><span class="stars" value="{{x.rating}}"></span></p><p>
+									<div style="margin-left: 85%;margin-top: -3%;" value="+1">{{x.likes}}<span></span><i class="like mdi-action-thumb-up" ng-click="updateLikes(x.name, x, 1)"></i><i class="like mdi-action-thumb-down" ng-click="updateLikes(x.name, x, -1)"></i></div>
+									</p>
 				      </div>
 				      <div class="collapsible-body">
 				      <div class="card blue-grey darken-1" style="margin-bottom: -20px;margin-top: 0px;">
@@ -108,7 +115,8 @@
 				
 				<script>
 
-
+				//Angular JS code for handling data from JSON
+					var data3;
 					console.log("hello");
 					var app = angular.module('myApp', []);
 					console.log("hello1");
@@ -117,13 +125,56 @@
 						var result = $http.get(url);
 						result.success( function(response) {
 				      	$scope.menu = response.menu;
+				      	data3 = response.menu;
 				      	$scope.predicate = 'name';
 		  				$scope.reverse = false;
 		  				$scope.order = function(predicate) {
 		   			    $scope.reverse = ($scope.predicate === predicate) ? !$scope.reverse : false;
 		    			$scope.predicate = predicate;
-		  };
+		  				};
+
+		  				//code for updating likes
+		  				$scope.updateLikes = function(name, product, num){
+							var newVal = localStorage.getItem(name);
+							if(newVal == null){
+								newVal = 0;
+							}
+							console.log("Likes for " + name + " :: before : " + newVal + " value:: " + num);
+							localStorage.setItem(name, +newVal+parseInt(num));
+							console.log("Likes for " + name + " :: after :" + localStorage.getItem(name));
+							$scope.menu[$scope.menu.indexOf(product)].likes = parseFloat(localStorage.getItem(name));
+						};
+
+						//code to get total likes
+						$scope.getTotalLikes = function(){
+							var total = 0;
+							for(var i = 0; i < $scope.menu.length; i++){
+	        				var product = $scope.menu[i];
+	        				total += product.likes;
+    						}
+    					return total;
+						}
+
+						//code to populate like for the first time
+						for(key in $scope.menu){
+							console.log("test in for:::");
+      						var val;
+      						if ($scope.menu.hasOwnProperty(key)) {
+      							console.log("test111");
+      							val = localStorage.getItem($scope.menu[key].name)
+      							console.log("setting likes::: " + val)
+      							if(val == null){
+      							$scope.menu[key].likes = 0;
+      							}
+      							else{
+      								$scope.menu[key].likes = parseFloat(val);
+      							}
+      						}
+						}
+
+
 				   });
+						// for displaying api hits
 						var url1 = "https://hackerearth.0x10.info/api/accolite_product?type=json&query=api_hits";
 						var result1 = $http.get(url1);
 						result1.success( function(response1) {
@@ -132,6 +183,7 @@
 				   });
 
 
+				// code to change to icon while toggling the collapsible div headers
 				function changeIcon(){
 					var x = document.getElementsByClassName("collapsible-header");
 					var i;
@@ -149,6 +201,8 @@
 				}
 				</script>
 			<script type="text/javascript">
+
+				//code to populate stars
 				$.fn.stars = function() {
 			    return $(this).each(function() {
 			        // Get the value
@@ -162,6 +216,7 @@
 			    });
 			}
 
+			//code for formatting link string
 			$.fn.format = function() {
 			    return $(this).each(function() {
 			        // Get the value
@@ -175,17 +230,23 @@
 			    });
 			}
 
+			// setting rating stars
 			function setRating(){
 
 				$('span.stars').stars();
 			}
 			
+			//Formating the string for link
 			function setFormat(){
 				$('a.link').format();
+				$('.like').on("click",function(e){e.stopPropagation()})
 			}
 
 			setTimeout(setRating, 1000);
 			setTimeout(setFormat, 1000);
+
+			//to stop click from propogating to parent
+			$('.like').on("click",function(e){e.stopPropagation()})
 
 			</script>
 				</body>
