@@ -1,0 +1,253 @@
+				<!DOCTYPE html>
+				<html>
+				<head>
+					<title>Accolite Products</title>
+					<link rel="stylesheet" type="text/css" href="./materialize/css/materialize.min.css">
+					<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+					<style type="text/css">
+						
+						span.stars, span.stars span {
+			    display: block;
+			    background: url(stars.png) 0 -16px repeat-x;
+			    width: 80px;
+			    height: 16px;
+}
+
+span.stars span {
+    background-position: 0 0;
+}
+.sortorder:after {
+		content: '\25b2';
+}
+.sortorder.reverse:after {
+		content: '\25bc';
+}
+					</style>
+					
+				</head>
+				<body ng-app="myApp" style="background-color:#FFFFE8">
+				<div class="container" ng-controller="MainCtrl">
+				<nav>
+				    <div class="nav-wrapper">
+				      <a href="#" class="brand-logo" style="height: 100%;width: 100%;">
+				      <img src="logo.png" style="height:100%">
+				      </a>
+				      <ul id="nav-mobile" class="right hide-on-med-and-down">
+				        <li style="margin-left: -100%;"> <b> API HITS : </b> {{api_hits.api_hits}}</li>
+				        <li style="margin-left: -35%;"><b> Total Products : </b> {{menu.length}}</li>
+				        <li style="margin-left: 35%;"><b> Total Likes : </b> {{ getTotalLikes() }}</li>
+				      </ul>
+				    </div>
+				  </nav>
+				<form>
+				        <div class="input-field" style="margin-top: 4%;">
+				          <input id="search" type="search" ng-model="searchText" required>
+				          <label for="search"><i class="material-icons">search</i></label>
+				          <i class="material-icons">close</i>
+				        </div>
+				</form>
+				<div ng-view>
+
+				<form action="#">
+	    <b>Sort By: </b>
+	      <span class="sortorder" ng-show="predicate === 'name'" ng-class="{reverse:reverse}"></span>
+	      <input name="group1" type="radio" id="test1" ng-click="order('name')"/>
+	      <label for="test1">Name</label>
+	   
+	    
+	      <span class="sortorder" ng-show="predicate === 'rating'" ng-class="{reverse:reverse}"></span>
+	      <input name="group1" type="radio" id="test2" ng-click="order('rating')"/>
+	      <label for="test2">Rating</label>
+
+	      <span class="sortorder" ng-show="predicate === 'likes'" ng-class="{reverse:reverse}"></span>
+	      <input name="group1" type="radio" id="test3" ng-click="order('likes')"/>
+	      <label for="test3">Likes</label>
+	    
+	  		</form>
+	        
+				<ul class="collapsible" data-collapsible="accordion">
+				    <li ng-repeat="x in menu | filter:searchText | orderBy:predicate:reverse" style="margin-top: 2%;">
+				      <div class="collapsible-header" onclick="setTimeout(changeIcon, 100); setTimeout(setRating, 10);" >
+				      	<span><i class="small mdi-navigation-chevron-right"></i></span>
+									<span><b> {{x.name}}</b></span><p style="margin-top: -3.5%;margin-left: 20%;"><span class="stars" value="{{x.rating}}"></span></p><p>
+									<div style="margin-left: 85%;margin-top: -3%;" value="+1">{{x.likes}}<span></span><i class="like mdi-action-thumb-up" ng-click="updateLikes(x.name, x, 1)"></i><i class="like mdi-action-thumb-down" ng-click="updateLikes(x.name, x, -1)"></i></div>
+									</p>
+				      </div>
+				      <div class="collapsible-body">
+				      <div class="card blue-grey darken-1" style="margin-bottom: -20px;margin-top: 0px;">
+				      	<div class="card-content white-text">
+				      	<table>
+				      		<tr>
+				      			<td>
+				      				<table>
+				      	<th class="card-title"><h3>{{x.name}}</h3></th>
+				      	<tr>
+				      		<td><i class="Tiny material-icons">label</i><p style="margin-top: -13%;"><span ng-repeat="y in x.tags"> '{{y}}', </span></p></td>
+				      	</tr>
+				      	<tr>
+				      		<td><p style="margin-top: -13%;"><span class="stars" value="{{x.rating}}">{{x.rating}}</span></p></td>
+				      	</tr>
+				      	<tr>
+				      		<td><i class="Tiny material-icons">open_in_new</i><p style="margin-top: -13%;"> <a target="_blank" href="{{x.link}}" class="link">{{x.link}}</a></p></td>
+				      	</tr>
+				      	<tr>
+				      		<td><i class="Tiny material-icons">description</i><h4 style="margin-left: 6%;margin-top: -7%;">Description</h4> <p style="margin-top: -8%;">{{x.description}}</p></td>
+				      	</tr>
+				      	</table>
+				      			</td>
+				      			<td>
+				      				<div>
+				      		<img src="{{x.image}}" style="width: 400px;max-height: 320px">
+				      	</div>
+				      			</td>
+				      		</tr>
+				      	</table>
+				      	
+				      	</div>
+				      	</div>
+				      	</div>
+				      </div>
+				    </li>
+				  </ul>
+				</div>
+				</div>
+				<script type="text/javascript" src="jquery-2.1.4.min.js"></script>
+				<script src="angular.min.js"></script>
+				<script src="./materialize/js/materialize.min.js"></script>
+				<script>
+					
+				//Angular JS code for handling data from JSON
+					var data3;
+					console.log("hello");
+					var app = angular.module('myApp', []);
+					console.log("hello1");
+					app.controller('MainCtrl', function($scope, $http) {
+						var url = "https://hackerearth.0x10.info/api/accolite_product?type=json&query=list_product";
+						var result = $http.get(url);
+						result.success( function(response) {
+				      	$scope.menu = response.menu;
+				      	data3 = response.menu;
+				      	$scope.predicate = 'name';
+		  				$scope.reverse = false;
+		  				$scope.order = function(predicate) {
+		   			    $scope.reverse = ($scope.predicate === predicate) ? !$scope.reverse : false;
+		    			$scope.predicate = predicate;
+		  				};
+
+		  				//code for updating likes
+		  				$scope.updateLikes = function(name, product, num){
+							var newVal = localStorage.getItem(name);
+							if(newVal == null){
+								newVal = 0;
+							}
+							console.log("Likes for " + name + " :: before : " + newVal + " value:: " + num);
+							localStorage.setItem(name, +newVal+parseInt(num));
+							console.log("Likes for " + name + " :: after :" + localStorage.getItem(name));
+							$scope.menu[$scope.menu.indexOf(product)].likes = parseFloat(localStorage.getItem(name));
+						};
+
+						//code to get total likes
+						$scope.getTotalLikes = function(){
+							var total = 0;
+							for(var i = 0; i < $scope.menu.length; i++){
+	        				var product = $scope.menu[i];
+	        				total += product.likes;
+    						}
+    					return total;
+						}
+
+						//code to populate like for the first time
+						for(key in $scope.menu){
+							console.log("test in for:::");
+      						var val;
+      						if ($scope.menu.hasOwnProperty(key)) {
+      							console.log("test111");
+      							val = localStorage.getItem($scope.menu[key].name)
+      							console.log("setting likes::: " + val)
+      							if(val == null){
+      							$scope.menu[key].likes = 0;
+      							}
+      							else{
+      								$scope.menu[key].likes = parseFloat(val);
+      							}
+      						}
+						}
+
+
+				   });
+						// for displaying api hits
+						var url1 = "https://hackerearth.0x10.info/api/accolite_product?type=json&query=api_hits";
+						var result1 = $http.get(url1);
+						result1.success( function(response1) {
+				      	$scope.api_hits = response1;
+				   });
+				   });
+
+
+				// code to change to icon while toggling the collapsible div headers
+				function changeIcon(){
+					var x = document.getElementsByClassName("collapsible-header");
+					var i;
+					for (i = 0; i < x.length; i++) {
+					    x[i].getElementsByTagName("i")[0].className = "mdi-navigation-chevron-right";
+					}
+
+					var y = document.getElementsByClassName("collapsible-header active");
+					var i;
+					for (i = 0; i < y.length; i++) {
+					    y[i].getElementsByTagName("i")[0].className = "mdi-navigation-expand-more";
+					}
+					console.log("changed");
+					
+				}
+
+				//code to populate stars
+				$.fn.stars = function() {
+			    return $(this).each(function() {
+			        // Get the value
+			        var val = parseFloat($(this).attr('value'));
+			        // Make sure that the value is in 0 - 5 range, multiply to get width
+			        var size = Math.max(0, (Math.min(5, val))) * 16;
+			        // Create stars holder
+			        var $span = $('<span />').width(size);
+			        // Replace the numerical value with stars
+			        $(this).html($span);
+			    });
+			}
+
+			//code for formatting link string
+			$.fn.format = function() {
+			    return $(this).each(function() {
+			        // Get the value
+			        var val = $(this).attr('href');
+			        // Substring the link
+			        var newVal = val.substring(val.lastIndexOf('/')+1);
+			        // // Create holder
+			        var $a = $('<a />').text(newVal);
+			        // Replace the numerical value with stars
+			        $(this).html($a);
+			    });
+			}
+
+			// setting rating stars
+			function setRating(){
+
+				$('span.stars').stars();
+			}
+			
+			//Formating the string for link
+			function setFormat(){
+				$('a.link').format();
+				$('.like').on("click",function(e){e.stopPropagation()})
+			}
+
+			setTimeout(setRating, 1000);
+			setTimeout(setFormat, 1000);
+
+			//to stop click from propogating to parent
+			$('.like').on("click",function(e){e.stopPropagation()});
+				</script>
+				
+				
+				</body>
+				</html>
